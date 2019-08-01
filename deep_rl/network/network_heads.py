@@ -8,6 +8,39 @@ from .network_utils import *
 from .network_bodies import *
 
 
+class TDAuxNet(nn.Module, BaseNet):
+    class AuxCFG:
+        def __init__(self, gamma, loss_weight=1.0):
+            # not much in here
+            self.gamma = gamma
+            self.loss_weight = loss_weight
+
+    def __init__(self, state_dim, output_dim, body, aux_dict):
+        super(TDAuxNet, self).__init__()
+        self.fc_head = layer_init(nn.Linear(body.feature_dim, output_dim))
+
+        self.aux_dict = aux_dict
+
+        self.aux_heads = nn.ModuleDict()
+        for key, aux_cfg in aux_dict.items():
+            self.aux_heads[key] = nn.Sequential(nn.Linear(body.feature_dim, body.feature_dim), nn.ReLU(),
+                                                nn.Linear(body.feature_dim, state_dim))
+
+        self.to(Config.DEVICE)
+
+    def forward(self, x):
+        outputs = {}
+        phi = self.body(tensor(x))
+        outputs["phi"] = phi
+        y = self.fc_head(phi)
+        outputs["q_values"] = y
+
+        for key, aux_head in self.aux_heads.items():
+            outputs[key] = aux_head(phi) / (1.0 - self.aux_dict[key].gamma)
+
+        return outputs
+
+
 class VanillaNet(nn.Module, BaseNet):
     def __init__(self, output_dim, body):
         super(VanillaNet, self).__init__()
@@ -117,7 +150,7 @@ class DeterministicActorCriticNet(nn.Module, BaseNet):
         self.actor_params = list(self.actor_body.parameters()) + list(self.fc_action.parameters())
         self.critic_params = list(self.critic_body.parameters()) + list(self.fc_critic.parameters())
         self.phi_params = list(self.phi_body.parameters())
-        
+
         self.actor_opt = actor_opt_fn(self.actor_params + self.phi_params)
         self.critic_opt = critic_opt_fn(self.critic_params + self.phi_params)
         self.to(Config.DEVICE)
@@ -158,7 +191,7 @@ class GaussianActorCriticNet(nn.Module, BaseNet):
         self.actor_params = list(self.actor_body.parameters()) + list(self.fc_action.parameters())
         self.critic_params = list(self.critic_body.parameters()) + list(self.fc_critic.parameters())
         self.phi_params = list(self.phi_body.parameters())
-        
+
         self.std = nn.Parameter(torch.zeros(action_dim))
         self.to(Config.DEVICE)
 
@@ -201,7 +234,7 @@ class CategoricalActorCriticNet(nn.Module, BaseNet):
         self.actor_params = list(self.actor_body.parameters()) + list(self.fc_action.parameters())
         self.critic_params = list(self.critic_body.parameters()) + list(self.fc_critic.parameters())
         self.phi_params = list(self.phi_body.parameters())
-        
+
         self.to(Config.DEVICE)
 
     def forward(self, obs, action=None):
