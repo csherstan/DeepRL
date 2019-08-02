@@ -90,7 +90,7 @@ def batch_mujoco():
 if __name__ == '__main__':
     mkdir('log')
     mkdir('data')
-    random_seed()
+    random_seed(0)
     set_one_thread()
 
     select_device(0)

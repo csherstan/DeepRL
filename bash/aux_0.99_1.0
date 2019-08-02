@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=6G
+#SBATCH --gres=gpu:1
+#SBATCH --exclude=compute011
+
+source $BASH_CFG
+activate_venv
+
+time python /home/craig/workspace/DeepRL/aux_0.99_1.0.py \
+--game BreakoutNoFrameskip-v4 --run $SLURM_ARRAY_TASK_ID

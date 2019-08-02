@@ -29,8 +29,9 @@ class TDAuxNet(nn.Module, BaseNet):
 
         self.aux_heads = nn.ModuleDict()
         for key, aux_cfg in aux_dict.items():
-            self.aux_heads[key] = nn.Sequential(nn.Linear(body.feature_dim, body.feature_dim), nn.ReLU(),
-                                                nn.Linear(body.feature_dim, aux_dim))
+            self.aux_heads[key] = nn.Linear(body.feature_dim, aux_dim)
+            # self.aux_heads[key] = nn.Sequential(nn.Linear(body.feature_dim, body.feature_dim), nn.ReLU(),
+            #                                     nn.Linear(body.feature_dim, aux_dim))
 
         self.to(Config.DEVICE)
 

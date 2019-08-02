@@ -3,6 +3,7 @@
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
+from torch import autograd
 
 from ..network import *
 from ..component import *
@@ -36,6 +37,10 @@ class DQNActor(BaseActor):
         return entry
 
 
+def is_problem(t):
+    return torch.any(torch.isinf(t)).item() or torch.any(torch.isnan(t)).item()
+
+
 class TDAuxAgent(BaseAgent):
     def __init__(self, config):
         BaseAgent.__init__(self, config)
@@ -55,6 +60,8 @@ class TDAuxAgent(BaseAgent):
 
         self.total_steps = 0
         self.batch_indices = range_tensor(self.replay.batch_size)
+
+        self.losses = {}
 
     def close(self):
         close_obj(self.replay)
@@ -109,18 +116,72 @@ class TDAuxAgent(BaseAgent):
             policy_loss = (q_next - q).pow(2).mul(0.5).mean()
             loss = policy_loss
 
+            for n_p in self.network.named_parameters():
+                if is_problem(n_p[1]):
+                    raise Exception
+
+            if is_problem(states):
+                raise Exception
+
+            self.losses.setdefault("policy", []).append(policy_loss.item())
+
             for key, cfg in self.network.aux_dict.items():
-                target = states + cfg.gamma * target_output[key]
-                prediction = network_output[key]
+                target = (states + cfg.gamma * target_output[key]) * (1 - cfg.gamma)
+                # target = torch.zeros_like(states)
+                prediction = network_output[key] * (1 - cfg.gamma)
+                target.detach_()
+
+                if is_problem(target):
+                    raise Exception
+
+                if is_problem(prediction):
+                    raise Exception
 
                 aux_loss = cfg.criteria(prediction, target)
+
+                self.losses.setdefault(key, []).append(aux_loss.item())
+
                 loss += aux_loss * cfg.loss_weight
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            nn.utils.clip_grad_norm_(self.network.parameters(), self.config.gradient_clip)
-            with config.lock:
-                self.optimizer.step()
+            self.losses.setdefault("total_loss", []).append(loss.item())
+
+            if self.total_steps % self.config.log_interval == 0:
+                for key, loss_list in self.losses.items():
+                    self.logger.add_scalar(f"loss/{key}", np.array(loss_list).mean(), step=self.total_steps)
+
+            copied = None
+            for n_p in self.network.named_parameters():
+                if n_p[0] == "aux_heads.0_0.bias":
+                    copied = n_p[1].clone().detach()
+                    if is_problem(copied):
+                        raise Exception
+
+                    break
+
+            with autograd.detect_anomaly():
+                self.optimizer.zero_grad()
+                loss.backward()
+                nn.utils.clip_grad_norm_(self.network.parameters(), self.config.gradient_clip)
+
+                for n_p in self.network.named_parameters():
+                    if is_problem(n_p[1].grad):
+                        raise Exception
+
+                for idx_, p in enumerate(self.optimizer.param_groups[0]["params"]):
+                    if is_problem(p):
+                        raise Exception
+
+                with config.lock:
+
+                    self.optimizer.step()
+
+                    for n_p in self.network.named_parameters():
+                        if is_problem(n_p[1]):
+                            raise Exception
+
+                    for idx_, p in enumerate(self.optimizer.param_groups[0]["params"]):
+                        if is_problem(p):
+                            raise Exception
 
         if self.total_steps / self.config.sgd_update_frequency % \
                 self.config.target_network_update_freq == 0:

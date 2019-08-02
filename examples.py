@@ -18,11 +18,15 @@ def td_aux_many(**kwargs):
 
     config.task_fn = lambda: Task(config.game)
     config.eval_env = config.task_fn()
+    aux_gammas = [0.0, 0.5, 0.9, 0.99]
+    aux_gammas = [0.0]
 
-    aux_dict = {str(g).replace(".", "_"): TDAuxNet.AuxCFG(g) for g in [0.0, 0.5, 0.9, 0.99]}
+    aux_dict = {str(g).replace(".", "_"): TDAuxNet.AuxCFG(g, loss_weight=1.0) for g in aux_gammas}
+    # aux_dict = {}
 
     config.optimizer_fn = lambda params: torch.optim.RMSprop(
         params, lr=0.00025, alpha=0.95, eps=0.01, centered=True)
+    # config.optimizer_fn = lambda params: torch.optim.Adam(params)
     # I'm just hard coding the shape of the target
     config.network_fn = lambda: TDAuxNet((4, 84, 84), config.action_dim,
                                          NatureConvBody(in_channels=config.history_length), aux_dict)
@@ -35,7 +39,7 @@ def td_aux_many(**kwargs):
     config.reward_normalizer = SignNormalizer()
     config.discount = 0.99
     config.target_network_update_freq = 10000
-    config.exploration_steps = 50000
+    config.exploration_steps = 1000
     config.sgd_update_frequency = 4
     config.gradient_clip = 5
     config.history_length = 4
