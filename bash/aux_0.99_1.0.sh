@@ -8,5 +8,6 @@
 source $BASH_CFG
 activate_venv
 
-time python /home/craig/workspace/DeepRL/aux_0.99_1.0.py \
+# run from bash directory
+time python ../aux_0.99_1.0.py \
 --game BreakoutNoFrameskip-v4 --run $SLURM_ARRAY_TASK_ID
