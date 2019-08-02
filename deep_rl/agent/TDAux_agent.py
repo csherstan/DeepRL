@@ -85,6 +85,8 @@ class TDAuxAgent(BaseAgent):
             experiences = self.replay.sample()
             states, actions, rewards, next_states, terminals = experiences
             states = self.config.state_normalizer(states)
+            # after normalizer the state is (batch, 4, 84, 84)
+
             next_states = self.config.state_normalizer(next_states)
 
             target_output = self.target_network(next_states)
@@ -107,11 +109,12 @@ class TDAuxAgent(BaseAgent):
             policy_loss = (q_next - q).pow(2).mul(0.5).mean()
             loss = policy_loss
 
-            # TODO: compute the aux losses here.
-            aux_losses = {}
+            for key, cfg in self.network.aux_dict.items():
+                target = states + cfg.gamma * target_output[key]
+                prediction = network_output[key]
 
-            for loss_key, aux_loss in aux_losses.items():
-                loss += aux_losses[loss_key]
+                aux_loss = cfg.criteria(prediction, target)
+                loss += aux_loss * cfg.loss_weight
 
             self.optimizer.zero_grad()
             loss.backward()

@@ -10,21 +10,27 @@ from .network_bodies import *
 
 class TDAuxNet(nn.Module, BaseNet):
     class AuxCFG:
-        def __init__(self, gamma, loss_weight=1.0):
+        def __init__(self, gamma, criteria=None, loss_weight=1.0):
             # not much in here
             self.gamma = gamma
+            self.criteria = criteria if criteria is not None else nn.MSELoss()
             self.loss_weight = loss_weight
 
-    def __init__(self, state_dim, output_dim, body, aux_dict):
+    def __init__(self, aux_shape, output_dim, body, aux_dict):
         super(TDAuxNet, self).__init__()
+        self.body = body
         self.fc_head = layer_init(nn.Linear(body.feature_dim, output_dim))
 
         self.aux_dict = aux_dict
 
+        self.aux_shape = aux_shape
+
+        aux_dim = int(np.prod(aux_shape))
+
         self.aux_heads = nn.ModuleDict()
         for key, aux_cfg in aux_dict.items():
             self.aux_heads[key] = nn.Sequential(nn.Linear(body.feature_dim, body.feature_dim), nn.ReLU(),
-                                                nn.Linear(body.feature_dim, state_dim))
+                                                nn.Linear(body.feature_dim, aux_dim))
 
         self.to(Config.DEVICE)
 
@@ -36,7 +42,7 @@ class TDAuxNet(nn.Module, BaseNet):
         outputs["q_values"] = y
 
         for key, aux_head in self.aux_heads.items():
-            outputs[key] = aux_head(phi) / (1.0 - self.aux_dict[key].gamma)
+            outputs[key] = (aux_head(phi) / (1.0 - self.aux_dict[key].gamma)).view((-1, *self.aux_shape))
 
         return outputs
 

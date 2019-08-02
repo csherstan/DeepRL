@@ -16,13 +16,14 @@ def batch_atari():
     ]
 
     algos = [
-        dqn_pixel,
-        quantile_regression_dqn_pixel,
-        categorical_dqn_pixel,
-        a2c_pixel,
-        n_step_dqn_pixel,
-        option_critic_pixel,
-        ppo_pixel,
+        td_aux_many,
+        # dqn_pixel,
+        # quantile_regression_dqn_pixel,
+        # categorical_dqn_pixel,
+        # a2c_pixel,
+        # n_step_dqn_pixel,
+        # option_critic_pixel,
+        # ppo_pixel,
     ]
 
     algo = algos[cf.i]
