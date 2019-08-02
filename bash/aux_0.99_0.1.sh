@@ -9,5 +9,5 @@ source $BASH_CFG
 activate_venv
 
 # run from bash directory
-time python ../aux_0.99_1.0.py \
+time python ../aux_0.99_0.1.py \
 --game BreakoutNoFrameskip-v4 --run $SLURM_ARRAY_TASK_ID
