@@ -29,7 +29,7 @@ def td_aux_many(**kwargs):
                                          NatureConvBody(in_channels=config.history_length), aux_dict)
     config.random_action_prob = LinearSchedule(1.0, 0.01, 1e6)
 
-    config.replay_fn = lambda: AsyncReplay(memory_size=int(1e6), batch_size=32)
+    config.replay_fn = lambda: AsyncReplay(memory_size=int(5e5), batch_size=32)
 
     config.batch_size = 32
     config.state_normalizer = ImageNormalizer()
@@ -43,6 +43,7 @@ def td_aux_many(**kwargs):
     # config.double_q = True
     config.double_q = False
     config.max_steps = int(2e7)
+    config.save_interval = 1000000
     run_steps(TDAuxAgent(config))
 
 
@@ -66,4 +67,4 @@ if __name__ == "__main__":
     cf.add_argument('--run', type=int)
     cf.merge()
 
-    td_aux_many(game=args.game, run=args.run, remark="aux_0.99_1.0")
+    td_aux_many(game=args.game, run=args.run, remark="aux_0.99_10.0")

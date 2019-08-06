@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=12G
+#SBATCH --mem=24G
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=compute011
 
