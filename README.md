@@ -20,6 +20,7 @@ To run the bash files first source skynet.sh
 ```
 cd bash
 source skynet.sh
+activate_venv
 ```
 
 To launch one of the training scripts (here shown for 3 seeds):
