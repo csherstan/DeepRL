@@ -3,13 +3,13 @@
 # Permission given to modify the code as long as you keep this        #
 # declaration at the top                                              #
 #######################################################################
+# Modified by Craig Sherstan 2019
+#
+######################################################################
 from torch import autograd
 
-from ..network import *
-from ..component import *
-from ..utils import *
-import time
 from .BaseAgent import *
+from ..network import *
 
 
 class DQNActor(BaseActor):
@@ -42,7 +42,11 @@ def is_problem(t):
 
 
 class TDAuxAgent(BaseAgent):
+    """
+    This code is based off of the DQNAgent code
+    """
     def __init__(self, config):
+
         BaseAgent.__init__(self, config)
         self.config = config
         config.lock = mp.Lock()
@@ -116,6 +120,8 @@ class TDAuxAgent(BaseAgent):
             policy_loss = (q_next - q).pow(2).mul(0.5).mean()
             loss = policy_loss
 
+            #---------- Start Aux tasks -----------------------#
+
             for n_p in self.network.named_parameters():
                 if is_problem(n_p[1]):
                     raise Exception
@@ -143,11 +149,16 @@ class TDAuxAgent(BaseAgent):
 
                 loss += aux_loss * cfg.loss_weight
 
+            # ---------- End Aux tasks -----------------------#
+
             self.losses.setdefault("total_loss", []).append(loss.item())
 
             if self.total_steps % self.config.log_interval == 0:
                 for key, loss_list in self.losses.items():
                     self.logger.add_scalar(f"loss/{key}", np.array(loss_list).mean(), step=self.total_steps)
+
+            # TODO: there are lots of lines in here meant to debug for an instability problem observed when using
+            # RMSProp.
 
             copied = None
             for n_p in self.network.named_parameters():

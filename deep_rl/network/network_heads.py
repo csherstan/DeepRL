@@ -10,23 +10,44 @@ from .network_bodies import *
 
 class TDAuxNet(nn.Module, BaseNet):
     class AuxCFG:
+        """
+        This class is used to hold the configuration for a given auxiliary task
+        """
+
         def __init__(self, gamma, criteria=None, loss_weight=1.0):
+            """
+
+            :param gamma: Discounting
+            :param criteria: Loss function
+            :param loss_weight: Weighting applied to the loss
+            """
             # not much in here
             self.gamma = gamma
             self.criteria = criteria if criteria is not None else nn.MSELoss()
             self.loss_weight = loss_weight
 
     def __init__(self, aux_shape, output_dim, body, aux_dict):
+        """
+
+        :param aux_shape: Shape of the aux output
+        :param output_dim: number of dims for the q_values
+        :param body: network body
+        :param aux_dict: A dictionary of AuxCFG defining the auxiliary tasks.
+        """
         super(TDAuxNet, self).__init__()
         self.body = body
+
+        # this is for the q values
         self.fc_head = layer_init(nn.Linear(body.feature_dim, output_dim))
 
+        # a dictionary holding the aux configs
         self.aux_dict = aux_dict
 
         self.aux_shape = aux_shape
 
         aux_dim = int(np.prod(aux_shape))
 
+        # create a linear layer for each auxiliary task
         self.aux_heads = nn.ModuleDict()
         for key, aux_cfg in aux_dict.items():
             self.aux_heads[key] = nn.Linear(body.feature_dim, aux_dim)
@@ -36,6 +57,12 @@ class TDAuxNet(nn.Module, BaseNet):
         self.to(Config.DEVICE)
 
     def forward(self, x):
+        """
+
+        :param x:
+        :return: output is a dict with keys 'q_values' and the keys of the aux tasks
+        """
+
         outputs = {}
         phi = self.body(tensor(x))
         outputs["phi"] = phi

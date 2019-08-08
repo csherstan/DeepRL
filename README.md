@@ -1,5 +1,49 @@
 # DeepRL
 
+# Changes made for TD-AE
+
+Experiment scripts are included directly in the root directory:
+* aux_0.99_0.1.py
+* aux_0.99_1.0.py
+* aux_0.99_10.0.py
+* aux_0.99_100.0.py
+* aux_0.99_1000.0.py
+* aux_none.py
+
+Note that while the original code used RMSProp I found that I would get `nan` values in the optimizer
+during training. I never managed to debug the source of this problem, but found that switching to Adam
+optimizer worked.
+
+Bash files were created for launching these on skynet.
+
+To run the bash files first source skynet.sh
+```
+cd bash
+source skynet.sh
+```
+
+To launch one of the training scripts (here shown for 3 seeds):
+
+```
+sbatch --array=0-2 aux_none.sh
+```
+
+## changed source files
+
+* deep_rl/network/network_heads.py
+
+  Added TDAuxNet which adds only the heads for the auxiliary prediction tasks.
+  
+* deep_rl/agent/TDAux_agent.py
+
+  This is actual agent used for training.
+
+
+
+
+
+
+
 > If you have any question or want to report a bug, please open an issue instead of emailing me directly.
 
 Modularized implementation of popular deep RL algorithms by PyTorch. Easy switch between toy tasks and challenging games.
