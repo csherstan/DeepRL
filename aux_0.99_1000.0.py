@@ -7,11 +7,19 @@ from deep_rl import random_seed, set_one_thread, select_device, Config, generate
 from deep_rl.agent.TDAux_agent import TDAuxAgent
 
 
-def td_aux_many(**kwargs):
+def td_aux_many(config: Config, **kwargs):
+    """
+
+    :param config:
+    :param kwargs: kwargs used to generate the experiment tag name uses for saving.
+    :return:
+    """
     generate_tag(kwargs)
     kwargs.setdefault('log_level', 0)
-    config = Config()
     config.merge(kwargs)
+
+    mkdir(os.path.join(config.data_dir, 'log'))
+    mkdir(os.path.join(config.data_dir, 'data'))
 
     config.task_fn = lambda: Task(config.game)
     config.eval_env = config.task_fn()
@@ -48,23 +56,14 @@ def td_aux_many(**kwargs):
 
 
 if __name__ == "__main__":
-    mkdir('log')
-    mkdir('data')
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--game", required=True)
-    parser.add_argument("--run", type=int, required=True)
-    # parser.add_argument("--seed", required=True)
-    args = parser.parse_args()
+    cf = Config()
+    cf.add_argument('--game', required=True)
+    cf.add_argument('--run', type=int, required=True)
+    cf.add_argument('--data_dir', type=str, required=True)
+    cf.add_argument('--save_interval', type=int, default=1000000)
+    cf.merge()
 
-    # random_seed(0)
     set_one_thread()
     select_device(0)
 
-    cf = Config()
-    cf.add_argument('--i', type=int, default=0)
-    cf.add_argument('--j', type=int, default=0)
-    cf.add_argument('--game')
-    cf.add_argument('--run', type=int)
-    cf.merge()
-
-    td_aux_many(game=args.game, run=args.run, remark="aux_0.99_1000.0")
+    td_aux_many(cf, game=cf.game, run=cf.run, remark="aux_0.99_1000.0")

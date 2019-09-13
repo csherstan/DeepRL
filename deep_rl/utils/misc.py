@@ -20,7 +20,7 @@ def run_steps(agent):
     t0 = time.time()
     while True:
         if config.save_interval and not agent.total_steps % config.save_interval:
-            agent.save('data/%s-%s-%d' % (agent_name, config.tag, agent.total_steps))
+            agent.save('%s/data/%s-%s-%d' % (config.data_dir, agent_name, config.tag, agent.total_steps))
         if config.log_interval and not agent.total_steps % config.log_interval:
             agent.logger.info('steps %d, %.2f steps/s' % (agent.total_steps, config.log_interval / (time.time() - t0)))
             t0 = time.time()
@@ -37,8 +37,8 @@ def get_time_str():
     return datetime.datetime.now().strftime("%y%m%d-%H%M%S")
 
 
-def get_default_log_dir(name):
-    return './log/%s-%s' % (name, get_time_str())
+# def get_default_log_dir(name):
+#     return './log/%s-%s' % (name, get_time_str())
 
 
 def mkdir(path):

@@ -10,4 +10,4 @@ activate_venv
 
 # run from bash directory
 time python ../aux_none.py \
---game BreakoutNoFrameskip-v4 --run $SLURM_ARRAY_TASK_ID
+--game BreakoutNoFrameskip-v4 --run $SLURM_ARRAY_TASK_ID --data_dir $DATA_DIR/aux_none
