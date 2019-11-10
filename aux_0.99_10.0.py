@@ -5,7 +5,7 @@ import torch
 from deep_rl import random_seed, set_one_thread, select_device, Config, generate_tag, Task, TDAuxNet, NatureConvBody, \
     LinearSchedule, AsyncReplay, ImageNormalizer, SignNormalizer, run_steps, mkdir
 from deep_rl.agent.TDAux_agent import TDAuxAgent
-
+import os
 
 def td_aux_many(config: Config, **kwargs):
     """
