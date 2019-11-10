@@ -8,5 +8,5 @@ source $BASH_CFG
 activate_venv
 
 # run from bash directory
-time python ../aux_none.py \
+time python ../og.py \
 --game BreakoutNoFrameskip-v4 --run $SLURM_ARRAY_TASK_ID --data_dir $DATA_DIR/aux_none

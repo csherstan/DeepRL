@@ -11,7 +11,7 @@ from .network_bodies import *
 class TDAuxNet(nn.Module, BaseNet):
     class AuxCFG:
         """
-        This class is used to hold the configuration for a given auxiliary task
+        This class is used to hold the configuration for a given auxiliary task.
         """
 
         def __init__(self, gamma, criteria=None, loss_weight=1.0):
@@ -28,6 +28,10 @@ class TDAuxNet(nn.Module, BaseNet):
 
     def __init__(self, aux_shape, output_dim, body, aux_dict):
         """
+
+        I am using the gamma scaling. So the loss is multiplied by (1-γ) and the
+        output of the network divides by the same term.
+
 
         :param aux_shape: Shape of the aux output
         :param output_dim: number of dims for the q_values

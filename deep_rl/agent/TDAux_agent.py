@@ -132,6 +132,7 @@ class TDAuxAgent(BaseAgent):
             self.losses.setdefault("policy", []).append(policy_loss.item())
 
             for key, cfg in self.network.aux_dict.items():
+                # so we are applying the gamma scaling
                 target = (states + cfg.gamma * target_output[key]) * (1 - cfg.gamma)
                 # target = torch.zeros_like(states)
                 prediction = network_output[key] * (1 - cfg.gamma)
