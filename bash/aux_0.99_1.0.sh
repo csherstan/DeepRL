@@ -4,6 +4,7 @@
 #SBATCH --mem=24G
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=compute011
+#SBATCH --time=0-50:00
 
 source $BASH_CFG
 activate_venv
