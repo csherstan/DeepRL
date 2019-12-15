@@ -51,7 +51,6 @@ def td_aux_many(config: Config, **kwargs):
     config.history_length = 4
     # config.double_q = True
     config.double_q = False
-    config.max_steps = int(2e7)
     run_steps(TDAuxAgent(config))
 
 
@@ -61,6 +60,7 @@ if __name__ == "__main__":
     cf.add_argument('--run', type=int, required=True)
     cf.add_argument('--data_dir', type=str, required=True)
     cf.add_argument('--save_interval', type=int, default=1000000)
+    cf.add_argument('--max_steps', type=int, default=int(2.5e7))
     cf.merge()
 
     set_one_thread()

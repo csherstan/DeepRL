@@ -161,39 +161,39 @@ class TDAuxAgent(BaseAgent):
             # TODO: there are lots of lines in here meant to debug for an instability problem observed when using
             # RMSProp.
 
-            copied = None
-            for n_p in self.network.named_parameters():
-                if n_p[0] == "aux_heads.0_0.bias":
-                    copied = n_p[1].clone().detach()
-                    if is_problem(copied):
-                        raise Exception
-
-                    break
+            # copied = None
+            # for n_p in self.network.named_parameters():
+            #     if n_p[0] == "aux_heads.0_0.bias":
+            #         copied = n_p[1].clone().detach()
+            #         if is_problem(copied):
+            #             raise Exception
+            #
+            #         break
 
             with autograd.detect_anomaly():
                 self.optimizer.zero_grad()
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.network.parameters(), self.config.gradient_clip)
 
-                for n_p in self.network.named_parameters():
-                    if is_problem(n_p[1].grad):
-                        raise Exception
-
-                for idx_, p in enumerate(self.optimizer.param_groups[0]["params"]):
-                    if is_problem(p):
-                        raise Exception
+                # for n_p in self.network.named_parameters():
+                #     if is_problem(n_p[1].grad):
+                #         raise Exception
+                #
+                # for idx_, p in enumerate(self.optimizer.param_groups[0]["params"]):
+                #     if is_problem(p):
+                #         raise Exception
 
                 with config.lock:
 
                     self.optimizer.step()
 
-                    for n_p in self.network.named_parameters():
-                        if is_problem(n_p[1]):
-                            raise Exception
-
-                    for idx_, p in enumerate(self.optimizer.param_groups[0]["params"]):
-                        if is_problem(p):
-                            raise Exception
+                    # for n_p in self.network.named_parameters():
+                    #     if is_problem(n_p[1]):
+                    #         raise Exception
+                    #
+                    # for idx_, p in enumerate(self.optimizer.param_groups[0]["params"]):
+                    #     if is_problem(p):
+                    #         raise Exception
 
         if self.total_steps / self.config.sgd_update_frequency % \
                 self.config.target_network_update_freq == 0:
