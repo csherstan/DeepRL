@@ -45,6 +45,7 @@ class TDAuxAgent(BaseAgent):
     """
     This code is based off of the DQNAgent code
     """
+
     def __init__(self, config):
 
         BaseAgent.__init__(self, config)
@@ -120,29 +121,32 @@ class TDAuxAgent(BaseAgent):
             policy_loss = (q_next - q).pow(2).mul(0.5).mean()
             loss = policy_loss
 
-            #---------- Start Aux tasks -----------------------#
+            # ---------- Start Aux tasks -----------------------#
 
-            for n_p in self.network.named_parameters():
-                if is_problem(n_p[1]):
-                    raise Exception
-
-            if is_problem(states):
-                raise Exception
+            # for n_p in self.network.named_parameters():
+            #     if is_problem(n_p[1]):
+            #         raise Exception
+            #
+            # if is_problem(states):
+            #     raise Exception
 
             self.losses.setdefault("policy", []).append(policy_loss.item())
 
+            # just reconstruct the first frame.
+            aux_cumulants = states[:, -1, :]
+
             for key, cfg in self.network.aux_dict.items():
                 # so we are applying the gamma scaling
-                target = (states + cfg.gamma * target_output[key]) * (1 - cfg.gamma)
+                target = (aux_cumulants + cfg.gamma * target_output[key]) * (1 - cfg.gamma)
                 # target = torch.zeros_like(states)
                 prediction = network_output[key] * (1 - cfg.gamma)
                 target.detach_()
 
-                if is_problem(target):
-                    raise Exception
-
-                if is_problem(prediction):
-                    raise Exception
+                # if is_problem(target):
+                #     raise Exception
+                #
+                # if is_problem(prediction):
+                #     raise Exception
 
                 aux_loss = cfg.criteria(prediction, target)
 
@@ -184,7 +188,6 @@ class TDAuxAgent(BaseAgent):
                 #         raise Exception
 
                 with config.lock:
-
                     self.optimizer.step()
 
                     # for n_p in self.network.named_parameters():

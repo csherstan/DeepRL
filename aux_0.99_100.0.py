@@ -33,7 +33,7 @@ def td_aux_many(config: Config, **kwargs):
     #     params, lr=0.00025, alpha=0.95, eps=0.01, centered=True)
     config.optimizer_fn = lambda params: torch.optim.Adam(params, lr=1e-4)
     # I'm just hard coding the shape of the target
-    config.network_fn = lambda: TDAuxNet((4, 84, 84), config.action_dim,
+    config.network_fn = lambda: TDAuxNet((84, 84), config.action_dim,
                                          NatureConvBody(in_channels=config.history_length), aux_dict)
     config.random_action_prob = LinearSchedule(1.0, 0.01, 1e6)
 
