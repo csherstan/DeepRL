@@ -12,4 +12,4 @@ echo $GAME
 
 # run from bash directory
 time python ../aux_0.99_1.0.py \
---game $GAME --run $SLURM_ARRAY_TASK_ID --data_dir $DATA_DIR/aux_0.99_1.0
+--game $GAME --run $SLURM_ARRAY_TASK_ID --data_dir $DATA_DIR/$GAME/aux_0.99_1.0
